@@ -50,6 +50,18 @@ perderBola =
 pontuar(pp) = 
 	PRE pp : 1..7 & not(jogadorAtual=empty) & bolasAtuais > 0
 	THEN pontuacaoAtual := pontuacaoAtual + pp //melhorar implementação e atualizar ranking
-	END
+	END;
+
+
+rk <--  topDez=
+  	PRE size(ranking) >= 10
+  	THEN rk := ranking /|\ 10
+  	END;
+
+rk <-- posicaoRanking(pp)=
+	PRE pp : NAT & size(ranking)>=pp
+  	THEN rk := ranking(pp)
+  	END
+
 
 END
