@@ -13,7 +13,7 @@ VARIABLES
    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records
 
 INVARIANT
-    jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq(records)  & cartao : jogadores --> NAT & records : jogadores <-> NAT 
+    jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq(records)  & cartao : jogadores --> NAT & records : jogadores +-> NAT 
 
 INITIALIZATION
     jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records:= empty, 0, 0, 0, [ ], jogadores*{0},{}
@@ -37,13 +37,15 @@ iniciarPartida(jj) =
 
 desistir = 
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
-	THEN jogadorAtual, estado, bolasAtuais := empty, 0, 0 //adicionar atualização de recorde
+	THEN jogadorAtual, estado, bolasAtuais:= empty, 0, 0 || 
+		records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END
 	END ;
 
 perderBola = 
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
 	THEN  
-		IF bolasAtuais = 1  THEN  jogadorAtual, estado, bolasAtuais := empty, 0, 0  //adicionar atualização de recorde
+		IF bolasAtuais = 1  THEN  jogadorAtual, estado, bolasAtuais := empty, 0, 0 || 
+			records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END
 		ELSE bolasAtuais :=  bolasAtuais -1 END
 	END;
 
