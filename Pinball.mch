@@ -4,20 +4,21 @@ SETS
     JOGADOR
 
 CONSTANTS         
-    nBolas, valorMaquina, empty, jogadores, bonus1
-// Criar seencia de bonus
+    nBolas, valorMaquina, empty, jogadores, bonus
 
 PROPERTIES
-    nBolas = 5 & valorMaquina = 5 & empty : JOGADOR & jogadores = (JOGADOR - {empty}) & bonus1 = [3,2,1]
+    nBolas = 5 & valorMaquina = 5 & empty : JOGADOR & jogadores = (JOGADOR - {empty}) 
+	& bonus = {1 |->  [3,2,4], 2 |->  [1,4,5], 3 |->  [2,1, 4, 7], 4 |->  [3,2,1], 5 |->  [5,2,6], 6 |->  [4,7,1], 7 |->  [5,4,1,2,3]}
 
 VARIABLES
-   jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records
+   jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos
 
 INVARIANT
-    jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq(records)  & cartao : jogadores --> NAT & records : jogadores +-> NAT 
+    jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq(records)  
+	& cartao : jogadores --> NAT & records : jogadores +-> NAT  & sequenciaAcertos : seq(NAT)
 
 INITIALIZATION
-    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records:= empty, 0, 0, 0, [ ], jogadores*{0},{}
+    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos:= empty, 0, 0, 0, [ ], jogadores*{0},{}, []
 
 OPERATIONS
 
@@ -38,7 +39,7 @@ iniciarPartida(jj) =
 
 desistir = 
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
-	THEN jogadorAtual, estado, bolasAtuais:= empty, 0, 0 || 
+	THEN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 0, 0, [] || 
 		records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END
 // Adicionar e ordenar o ranking
 //|| 
@@ -51,18 +52,20 @@ desistir =
 perderBola = 
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
 	THEN  
-		IF bolasAtuais = 1  THEN  jogadorAtual, estado, bolasAtuais := empty, 0, 0 || 
+		IF bolasAtuais = 1  THEN  jogadorAtual, estado, bolasAtuais, sequenciaAcertos := empty, 0, 0, [] || 
 			records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END
-		ELSE bolasAtuais :=  bolasAtuais -1 END
+		ELSE bolasAtuais, sequenciaAcertos :=  bolasAtuais -1, [] END
 	END;
 // Adicionar e ordenar o ranking
 
 pontuar(pp) = 
 	PRE pp : 1..7 & not(jogadorAtual=empty) & bolasAtuais > 0
-	THEN pontuacaoAtual := pontuacaoAtual + pp //melhorar implementação e atualizar ranking
+	THEN 	sequenciaAcertos := sequenciaAcertos <- pp || 
+		pontuacaoAtual := pontuacaoAtual + pp*10 + 
+			IF size(sequenciaAcertos) >= card(bonus(pp)) 
+			THEN IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 100 ELSE 0 END 
+			ELSE 0 END
 	END;
-// Verificar bonus e somar a pontuação
-
 
 rk <--  topDez=
   	PRE size(ranking) >= 10
