@@ -41,7 +41,9 @@ desistir =
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
 	THEN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 0, 0, [] || 
 		records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END ||
-		ranking := ranking  <+ { IF jogadorAtual /: ran(ranking) THEN size(ranking) +1 ELSE ranking~(jogadorAtual) END |-> jogadorAtual}
+		// ranking := ranking  <+ { IF jogadorAtual /: ran(ranking) THEN size(ranking) +1 ELSE ranking~(jogadorAtual) END |-> jogadorAtual} ||
+		ANY oranking
+		WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! ii, jj . ( ii: ran(ranking) & jj: ran(ranking) & records(ii) >= records(jj) => oranking~(ii ) <= oranking~(jj)) THEN ranking := oranking <+ { IF jogadorAtual /: ran(oranking) THEN size(oranking) +1 ELSE oranking~(jogadorAtual) END |-> jogadorAtual} END 
 // Adicionar e ordenar o ranking
 //|| 
 		//ranking := IF jogadorAtual /: dom(records)  THEN ranking <- {jogadorAtual, pontuacaoAtual} ELSE  ranking  <+ {
