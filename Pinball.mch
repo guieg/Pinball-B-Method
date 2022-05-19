@@ -4,10 +4,11 @@ SETS
     JOGADOR
 
 CONSTANTS         
-    nBolas, valorMaquina, empty, jogadores
+    nBolas, valorMaquina, empty, jogadores, bonus1
+// Criar seencia de bonus
 
 PROPERTIES
-    nBolas = 5 & valorMaquina = 5 & empty : JOGADOR & jogadores = (JOGADOR - {empty})
+    nBolas = 5 & valorMaquina = 5 & empty : JOGADOR & jogadores = (JOGADOR - {empty}) & bonus1 = [3,2,1]
 
 VARIABLES
    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records
@@ -39,7 +40,13 @@ desistir =
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
 	THEN jogadorAtual, estado, bolasAtuais:= empty, 0, 0 || 
 		records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END
-	END ;
+// Adicionar e ordenar o ranking
+//|| 
+		//ranking := IF jogadorAtual /: dom(records)  THEN ranking <- {jogadorAtual, pontuacaoAtual} ELSE  ranking  <+ {
+//((ranking |> {{jogadorAtual  |-> records(jogadorAtual)}})~)({jogadorAtual, records(jogadorAtual)}) |-> {jogadorAtual |-> pontuacaoAtual}
+//}
+// END
+	END;
 
 perderBola = 
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
@@ -48,11 +55,13 @@ perderBola =
 			records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END
 		ELSE bolasAtuais :=  bolasAtuais -1 END
 	END;
+// Adicionar e ordenar o ranking
 
 pontuar(pp) = 
 	PRE pp : 1..7 & not(jogadorAtual=empty) & bolasAtuais > 0
 	THEN pontuacaoAtual := pontuacaoAtual + pp //melhorar implementação e atualizar ranking
 	END;
+// Verificar bonus e somar a pontuação
 
 
 rk <--  topDez=
