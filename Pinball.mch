@@ -23,21 +23,21 @@ INITIALIZATION
 OPERATIONS
 
 adicionarCredito(jj, cc) =
-	PRE jj : jogadores & cc : NAT & cc > 0
+	PRE jj : jogadores & cc : NAT & cc > 0 & estado = 0
 	THEN  cartao :=  cartao <+ {jj |-> (cc + cartao(jj))}
 	END ;
 
 transferirCredito(j1, j2, cc) = 
-	PRE j1 : jogadores & j2 : jogadores & cc : NAT1 & cc <= cartao(j1) & not (j1=j2)
+	PRE j1 : jogadores & j2 : jogadores & cc : NAT1 & cc <= cartao(j1) & not (j1=j2) & estado =0 
 	THEN  cartao :=  (cartao <+ {j1 |-> (cartao(j1) - cc)}) <+ {j2 |-> (cc + cartao(j2))}
 	END ;
 
 iniciarPartida(jj) = 
-	PRE jj : jogadores & cartao(jj) >= valorMaquina & jogadorAtual = empty
+	PRE jj : jogadores & cartao(jj) >= valorMaquina & jogadorAtual = empty & estado =0 
 	THEN jogadorAtual := jj || bolasAtuais := nBolas || cartao :=  cartao <+ {jj |-> (cartao(jj) - valorMaquina)} || estado := 1 || pontuacaoAtual := 0
 	END ;
 
-desistir = 
+finalizar = 
 	PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
 	THEN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 2, 0, [] || 
 		records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END ||
@@ -71,17 +71,17 @@ pontuar(pp) =
 	END;
 
 rk <--  topN(nn)=
-  	PRE size(ranking) >= nn & nn : NAT1
-  	THEN rk := % jg . (jg : jogadores & jg : ran(ranking)  & ranking~(jg)<= nn | {ranking~(jg), records(jg) })// ranking /|\ nn
-  	END;
+  	PRE size(ranking) >= nn & nn : NAT1 & estado /= 2
+  	THEN rk := % jg . (jg : jogadores & jg : ran(ranking)  & ranking~(jg)<= nn | (ranking~(jg) |-> records(jg))) // ranking /|\ nn
+  	END ;
 
 rk <-- posicaoRanking(pp)=
-	PRE pp : jogadores & pp : ran(ranking)
+	PRE pp : jogadores & pp : ran(ranking) & estado /= 2
   	THEN rk := ranking~(pp)
-  	END;
+  	END ;
 
 ordenarRanking = 
-	PRE estado = 2 & size(ranking) >= 2
+	PRE estado = 2
 	THEN ANY oranking 	WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! ii, jj . ( ii: ran(ranking) & jj: ran(ranking) & records(ii) >= records(jj) => oranking~(ii ) <= oranking~(jj)) THEN ranking := oranking END || 
 		estado := 0
 	END
