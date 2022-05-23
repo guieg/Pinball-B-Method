@@ -15,7 +15,8 @@ VARIABLES
 
 INVARIANT
     jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq( jogadores)  
-	& cartao : jogadores --> NAT & records : jogadores +-> NAT  & sequenciaAcertos : seq(NAT)
+	& cartao : jogadores --> NAT & records : jogadores +-> NAT  & sequenciaAcertos : seq(NAT) 
+	& !x.(x: NAT1 & x < size(ranking) & estado=0 => records(ranking(x)) >= records(ranking(x+1)))
 
 INITIALIZATION
     jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos:= empty, 0, 0, 0, [ ], jogadores*{0},{}, []
