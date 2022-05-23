@@ -16,7 +16,7 @@ VARIABLES
 INVARIANT
     jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq( jogadores)  
 	& cartao : jogadores --> NAT & records : jogadores +-> NAT  & sequenciaAcertos : seq(NAT) 
-	& !x.(x: NAT1 & x < size(ranking) & estado=0 => records(ranking(x)) >= records(ranking(x+1)))
+	& !xx.(xx: NAT1 & xx < size(ranking) & estado=0 => records(ranking(xx)) >= records(ranking(xx+1)))
 
 INITIALIZATION
     jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos:= empty, 0, 0, 0, [ ], jogadores*{0},{}, []
@@ -50,7 +50,6 @@ perderBola =
 	THEN  
 		bolasAtuais, sequenciaAcertos :=  bolasAtuais -1, []
 	END;
-// Adicionar e ordenar o ranking
 
 pontuar(pp) = 
 	PRE pp : 1..7 & not(jogadorAtual=empty) & bolasAtuais > 0
@@ -73,7 +72,7 @@ rk <-- posicaoRanking(pp)=
 
 ordenarRanking = 
 	PRE estado = 2
-	THEN ANY oranking 	WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! ii, jj . ( ii: ran(ranking) & jj: ran(ranking) & records(ii) >= records(jj) => oranking~(ii ) <= oranking~(jj)) THEN ranking := oranking END || 
+	THEN ANY oranking 	WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! ii, jj . ( ii/=jj & ii: ran(ranking) & jj: ran(ranking) & records(ii) > records(jj) => oranking~(ii ) < oranking~(jj)) THEN ranking := oranking END || 
 		estado := 0
 	END
 
