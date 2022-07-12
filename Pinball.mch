@@ -16,10 +16,10 @@ VARIABLES
 INVARIANT
     jogadorAtual : JOGADOR & bolasAtuais : NAT & pontuacaoAtual : NAT &estado : 0..5  & ranking : iseq( jogadores)  
 	& cartao : jogadores --> NAT & records : jogadores +-> NAT  & sequenciaAcertos : seq(NAT) 
-	& !x.(x: NAT1 & x < size(ranking) & estado=0 => records(ranking(x)) >= records(ranking(x+1)))
+	& !xx.(xx: NAT1 & xx < size(ranking) & estado=0 => records(ranking(xx)) >= records(ranking(xx+1)))
 
-INITIALIZATION
-    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos:= empty, 0, 0, 0, [ ], jogadores*{0},{}, []
+INITIALISATION
+    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos:= empty, 0, 0, 0, [], jogadores*{0},{}, []
 
 OPERATIONS
 
@@ -41,8 +41,8 @@ iniciarPartida(jj) =
 finalizar = 
 	PRE not(jogadorAtual = empty) & estado = 1 
 	THEN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 2, 0, [] || 
-		records(jogadorAtual) := IF jogadorAtual /: dom(records)  THEN pontuacaoAtual ELSE  max({records(jogadorAtual), pontuacaoAtual}) END ||
-		ranking := ranking  <+ { IF jogadorAtual /: ran(ranking) THEN size(ranking) +1 ELSE ranking~(jogadorAtual) END |-> jogadorAtual} 
+		 IF jogadorAtual /: dom(records)  THEN records(jogadorAtual) := pontuacaoAtual ELSE records(jogadorAtual) := max({records(jogadorAtual), pontuacaoAtual}) END ||
+		 IF jogadorAtual /: ran(ranking) THEN ranking := ranking  <+ { size(ranking) +1 |-> jogadorAtual} ELSE ranking := ranking  <+ { ranking~(jogadorAtual) |-> jogadorAtual} END
 	END;
 
 perderBola = 
@@ -54,15 +54,16 @@ perderBola =
 
 pontuar(pp) = 
 	PRE pp : 1..7 & not(jogadorAtual=empty) & bolasAtuais > 0
-	THEN 	sequenciaAcertos := sequenciaAcertos <- pp || 
-		pontuacaoAtual := pontuacaoAtual + pp*10 + 
-			IF size(sequenciaAcertos) >= card(bonus(pp)) 
-			THEN IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 100 ELSE 0 END 
-			ELSE 0 END
+	THEN 	sequenciaAcertos := sequenciaAcertos <- pp ||
+	    IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
+		        IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
+			          pontuacaoAtual := pontuacaoAtual + pp*10 + 100 
+			    ELSE  pontuacaoAtual := pontuacaoAtual + pp*10 + 0 END 
+		ELSE  pontuacaoAtual := pontuacaoAtual + pp*10 + 0 END
 	END;
 
 rk <--  topN(nn)=
-  	PRE size(ranking) >= nn & nn : NAT1 & estado /= 2
+  	PRE  nn : NAT1 & size(ranking) >= nn & estado /= 2
   	THEN rk := % jg . (jg : jogadores & jg : ran(ranking)  & ranking~(jg)<= nn | (ranking~(jg) |-> records(jg))) // ranking /|\ nn
   	END ;
 
@@ -73,7 +74,7 @@ rk <-- posicaoRanking(pp)=
 
 ordenarRanking = 
 	PRE estado = 2
-	THEN ANY oranking 	WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! ii, jj . ( ii: ran(ranking) & jj: ran(ranking) & records(ii) >= records(jj) => oranking~(ii ) <= oranking~(jj)) THEN ranking := oranking END || 
+	THEN ANY oranking 	WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! (ii, jj) . ( ii: ran(ranking) & jj: ran(ranking) & records(ii) >= records(jj) => oranking~(ii ) <= oranking~(jj)) THEN ranking := oranking END || 
 		estado := 0
 	END
 
