@@ -28,32 +28,32 @@ INITIALISATION
 OPERATIONS
     
     adicionarCredito(jj, cc) =
-    BEGIN cartao :=  cartao <+ {jj |-> (cc + cartao(jj))}
+    BEGIN  cartao :=  cartao <+ {indicejogador~(jj) |-> (cc + cartao(indicejogador~(jj)))}
     END ;
     
-    transferirCredito(j1, j2, cc) = 
-    BEGIN  cartao :=  (cartao <+ {j1 |-> (cartao(j1) - cc)}) <+ {j2 |-> (cc + cartao(j2))}
+    transferirCredito(j1, j2, cc) =  
+    BEGIN cartao :=  (cartao <+ {indicejogador~(j1) |-> (cartao(indicejogador~(j1)) - cc)}) <+ {indicejogador~(j2) |-> (cc + cartao(indicejogador~(j2)))}
     END ;
     
     iniciarPartida(jj) = 
     BEGIN jogadorAtual := jj;
           bolasAtuais := nBolas; 
-          cartao :=  cartao <+ {jj |-> (cartao(jj) - valorMaquina)}; 
+          cartao :=  cartao <+ {indicejogador~(jj) |-> (cartao(indicejogador~(jj)) - valorMaquina)}; 
           estado := 1; 
           pontuacaoAtual := 0
     END ;
     
     finalizar = 
     BEGIN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 2, 0, []; 
-        IF jogadorAtual /: dom(records)  THEN 
-            records(jogadorAtual) := pontuacaoAtual 
+        IF indicejogador~(jogadorAtual) /: dom(records)  THEN 
+            records(indicejogador~(jogadorAtual)) := pontuacaoAtual 
         ELSE 
-            records(jogadorAtual) := max({records(jogadorAtual), pontuacaoAtual}) 
+            records(indicejogador~(jogadorAtual)) := max({records(indicejogador~(jogadorAtual)), pontuacaoAtual}) 
         END ;
-        IF jogadorAtual /: ran(ranking) THEN 
-            ranking := ranking  <+ { size(ranking) +1 |-> jogadorAtual} 
+        IF indicejogador~(jogadorAtual) /: ran(ranking) THEN 
+            ranking := ranking  <+ { size(ranking) +1 |-> indicejogador~(jogadorAtual)} 
         ELSE 
-            ranking := ranking  <+ { ranking~(jogadorAtual) |-> jogadorAtual} 
+            ranking := ranking  <+ { ranking~(indicejogador~(jogadorAtual)) |-> indicejogador~(jogadorAtual)} 
         END
     END;
     
@@ -81,8 +81,31 @@ OPERATIONS
     END ;
     
     ordenarRanking = 
-    BEGIN ranking := ranking ; 
-            estado := 0
+    BEGIN 
+        VAR ii, tt, sw IN
+            ii:=0;
+            tt:=ii;
+            WHILE ii < maxjogadores
+            DO  
+                VAR jj IN
+                    jj := ii+1;
+                    WHILE jj < maxjogadores
+                    DO   
+                        IF records~(ranking~(tt)) < records~(ranking~(jj)) THEN tt:=jj END;
+                        jj:=jj+1
+                    INVARIANT jj : (ii+1)..(maxjogadores)
+                    VARIANT maxjogadores - jj
+                    END;
+                    sw := records(ranking~(tt));
+                    tt:=records(ranking~(ii));
+                    ii:=sw
+                END;
+                ii:=ii+1
+            INVARIANT ii : 0..(maxjogadores) & ! (xx, yy) . (xx : 0..(ii) & yy: 0..(ii) & xx /= yy & xx < yy => records~(ranking~(xx)) > records~(ranking~(yy)) )
+            VARIANT maxjogadores - ii
+            END
+        END;
+        estado := 0
     END
 
 
