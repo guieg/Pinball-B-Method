@@ -84,7 +84,7 @@ OPERATIONS
     
     rk <--  topN(nn)=
     PRE  nn : NAT1 & size(ranking) >= nn & estado /= 2
-    THEN rk := % jg . (jg : jogadores & jg : ran(ranking)  & ranking~(jg)<= nn | (ranking~(jg) |-> records(jg))) // ranking /|\ nn
+    THEN rk := % jg . (jg : NAT & jg : dom(ranking)  & jg <= nn | ranking(jg) ) // ranking /|\ nn
     END ;
     
     rk <-- posicaoRanking(pp)=
