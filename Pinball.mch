@@ -4,13 +4,14 @@ SETS
     JOGADOR
     
 CONSTANTS         
-    nBolas, valorMaquina, empty, jogadores, bonus
+    nBolas, valorMaquina, empty, jogadores, bonus, bumpers
     
 PROPERTIES
     nBolas = 5 
     & valorMaquina = 5 
     & empty : JOGADOR 
     & jogadores = (JOGADOR - {empty}) 
+    & bumpers : 1..7
     & bonus = {1 |->  [3,2,4], 2 |->  [1,4,5], 3 |->  [2,1, 4, 7], 4 |->  [3,2,1], 5 |->  [5,2,6], 6 |->  [4,7,1], 7 |->  [5,4,1,2,3]} // Na prática  { [3,2,4, 1], [1,4,5, 2], [2,1, 4, 7, 3], [3,2,1, 4], [5,2,6, 5], [4,7,1, 6], [5,4,1,2,3, 7] }
     
 VARIABLES
@@ -75,7 +76,7 @@ OPERATIONS
     // Adicionar e ordenar o ranking
     
     pontuar(pp) = 
-    PRE pp : 1..7 & not(jogadorAtual=empty) & bolasAtuais > 0
+    PRE pp : bumpers & not(jogadorAtual=empty) & bolasAtuais > 0
     THEN 	sequenciaAcertos := sequenciaAcertos <- pp ||
         IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
             IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
