@@ -92,7 +92,14 @@ OPERATIONS
     END;
     
     rk <-- posicaoRanking(pp)=
-    BEGIN rk := ranking~(pp)
+    BEGIN 
+        VAR ii IN ii := 0;
+        WHILE indicejogador(ranking(ii)) /= pp
+        DO ii:= ii + 1
+        INVARIANT ii < maxjogadores & #i2 .(i2 : ii..(maxjogadores -1) & indicejogador(ranking(i2)) = pp)
+        VARIANT maxjogadores -1 - ii
+        END;
+        rk := ii
     END ;
     
     ordenarRanking = 
