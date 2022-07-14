@@ -19,7 +19,9 @@ VARIABLES
 INVARIANT
     jogadorAtual : JOGADOR 
     & bolasAtuais : NAT 
-    & pontuacaoAtual : NAT &estado : 0..5  
+    & bolasAtuais < 6
+    & pontuacaoAtual : NAT 
+    & estado : 0..5  
     & ranking : iseq( jogadores)  
     & cartao : jogadores --> NAT 
     & records : jogadores +-> NAT  
