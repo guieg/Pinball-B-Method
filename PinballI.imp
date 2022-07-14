@@ -79,8 +79,17 @@ OPERATIONS
     END;
     
     rk <--  topN(nn)=
-    BEGIN rk := % jg . (jg : NAT & jg : dom(ranking)  & jg <= nn | ranking(jg) ) // ranking /|\ nn
-    END ;
+    BEGIN 
+        VAR ii IN ii := 0;
+        rk := 0..(nn-1) * 0;
+        WHILE ii < nn
+        DO   
+          rk(ii) := ranking(ii+1);
+          ii := ii + 1
+        INVARIANT ii : 0..nn !jj .(jj : 0..(ii-1) => rk(jj) = ranking(jj+1))
+        VARIANT nn - ii
+        END        
+    END;
     
     rk <-- posicaoRanking(pp)=
     BEGIN rk := ranking~(pp)
