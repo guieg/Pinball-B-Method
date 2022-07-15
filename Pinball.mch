@@ -35,13 +35,13 @@ INITIALISATION
 OPERATIONS
     
     adicionarCredito(jj, cc) =
-    PRE jj : jogadores & cc : NAT & cc > 0 & estado = 0
-    THEN  cartao :=  cartao <+ {jj |-> (cc + cartao(jj))}
+    PRE jj : jogadores & cc : NAT & cc > 0 & estado = 0 & cartao(jj) < MAXINT
+    THEN  cartao :=  cartao <+ {jj |-> min((cc + cartao(jj)), MAXINT)}
     END ;
     
     transferirCredito(j1, j2, cc) = 
-    PRE j1 : jogadores & j2 : jogadores & cc : NAT1 & cc <= cartao(j1) & not (j1=j2) & estado =0 
-    THEN  cartao :=  (cartao <+ {j1 |-> (cartao(j1) - cc)}) <+ {j2 |-> (cc + cartao(j2))}
+    PRE j1 : jogadores & j2 : jogadores & cc : NAT1 & cc <= cartao(j1) & not (j1=j2) & estado =0 & cartao(j2) < MAXINT
+    THEN  cartao :=  (cartao <+ {j1 |-> (cartao(j1) - cc)}) <+ {j2 |-> min((cc + cartao(j2)), MAXINT)}
     END ;
     
     iniciarPartida(jj) = 
