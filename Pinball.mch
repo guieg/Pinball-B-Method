@@ -76,13 +76,13 @@ OPERATIONS
     // Adicionar e ordenar o ranking
     
     pontuar(pp) = 
-    PRE pp : bumpers & not(jogadorAtual=empty) & bolasAtuais > 0
+    PRE pp : bumpers & not(jogadorAtual=empty) & bolasAtuais > 0 & pontuacaoAtual < MAXINT
     THEN 	sequenciaAcertos := sequenciaAcertos <- pp ||
         IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
             IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
-                pontuacaoAtual := pontuacaoAtual + pp*10 + 100 
-            ELSE  pontuacaoAtual := pontuacaoAtual + pp*10  END 
-        ELSE  pontuacaoAtual := pontuacaoAtual + pp*10 END
+                pontuacaoAtual := min(pontuacaoAtual + pp*10 + 100, MAXINT)
+            ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT) END 
+        ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT) END
     END;
     
     rk <--  topN(nn)=
