@@ -73,9 +73,9 @@ OPERATIONS
     BEGIN sequenciaAcertos := sequenciaAcertos <- pp;
         IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
             IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
-                pontuacaoAtual := pontuacaoAtual + pp*10 + 100 
-            ELSE  pontuacaoAtual := pontuacaoAtual + pp*10  END 
-        ELSE  pontuacaoAtual := pontuacaoAtual + pp*10 END
+                pontuacaoAtual := min(pontuacaoAtual + pp*10 + 100, MAXINT)
+            ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT)  END 
+        ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT) END
     END;
     
     rk <--  topN(nn)=
