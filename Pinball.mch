@@ -11,7 +11,7 @@ PROPERTIES
     & valorMaquina = 5 
     & empty : JOGADOR 
     & jogadores = (JOGADOR - {empty}) 
-    & bumpers : 1..7
+    & bumpers = 1..7
     & bonus = {1 |->  [3,2,4], 2 |->  [1,4,5], 3 |->  [2,1, 4, 7], 4 |->  [3,2,1], 5 |->  [5,2,6], 6 |->  [4,7,1], 7 |->  [5,4,1,2,3]} // Na prática  { [3,2,4, 1], [1,4,5, 2], [2,1, 4, 7, 3], [3,2,1, 4], [5,2,6, 5], [4,7,1, 6], [5,4,1,2,3, 7] }
     
 VARIABLES
@@ -36,12 +36,12 @@ OPERATIONS
     
     adicionarCredito(jj, cc) =
     PRE jj : jogadores & cc : NAT & cc > 0 & estado = 0 & cartao(jj) < MAXINT
-    THEN  cartao :=  cartao <+ {jj |-> min((cc + cartao(jj)), MAXINT)}
+    THEN  cartao :=  cartao <+ {jj |-> min({cc + cartao(jj), MAXINT})}
     END ;
     
     transferirCredito(j1, j2, cc) = 
     PRE j1 : jogadores & j2 : jogadores & cc : NAT1 & cc <= cartao(j1) & not (j1=j2) & estado =0 & cartao(j2) < MAXINT
-    THEN  cartao :=  (cartao <+ {j1 |-> (cartao(j1) - cc)}) <+ {j2 |-> min((cc + cartao(j2)), MAXINT)}
+    THEN  cartao :=  (cartao <+ {j1 |-> (cartao(j1) - cc)}) <+ {j2 |-> min({cc + cartao(j2), MAXINT})}
     END ;
     
     iniciarPartida(jj) = 
@@ -80,9 +80,9 @@ OPERATIONS
     THEN 	sequenciaAcertos := sequenciaAcertos <- pp ||
         IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
             IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
-                pontuacaoAtual := min(pontuacaoAtual + pp*10 + 100, MAXINT)
-            ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT) END 
-        ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT) END
+                pontuacaoAtual := min({pontuacaoAtual + pp*10 + 100, MAXINT})
+            ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END 
+        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END
     END;
     
     rk <--  topN(nn)=
@@ -103,3 +103,4 @@ OPERATIONS
     END
     
 END
+

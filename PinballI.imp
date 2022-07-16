@@ -6,6 +6,7 @@ CONSTANTS maxjogadores
 PROPERTIES maxjogadores = 5
     
 VALUES nBolas = 5; 
+    bumpers = 1..7;
     maxjogadores = 5;
     JOGADOR = 0..4;
     valorMaquina = 5;
@@ -20,7 +21,8 @@ INVARIANT
     indicejogador : 0..(maxjogadores-1) >-> JOGADOR 
     & jogadorAtual : JOGADOR 
     & bolasAtuais : NAT 
-    & pontuacaoAtual : NAT & estado : 0..5  
+    & pontuacaoAtual : NAT 
+    & estado : 0..5  
     & ranking : 0..(maxjogadores-1) >-> 0..(maxjogadores-1)
     & cartao : 0..(maxjogadores-1) --> NAT 
     & records :  0..(maxjogadores-1) --> NAT  
@@ -73,33 +75,35 @@ OPERATIONS
     BEGIN sequenciaAcertos := sequenciaAcertos <- pp;
         IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
             IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
-                pontuacaoAtual := min(pontuacaoAtual + pp*10 + 100, MAXINT)
-            ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT)  END 
-        ELSE  pontuacaoAtual := min(pontuacaoAtual + pp*10, MAXINT) END
+                pontuacaoAtual := min({pontuacaoAtual + pp*10 + 100, MAXINT})
+            ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT})  END 
+        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END
     END;
     
     rk <--  topN(nn)=
     BEGIN 
         VAR ii IN ii := 0;
-        rk := 0..(nn-1) * indicejogador(0);
-        WHILE ii < nn
-        DO   
-          rk(ii) := indicejogador(ranking(ii+1));
-          ii := ii + 1
-        INVARIANT ii : 0..nn !jj .(jj : 0..(ii-1) => rk(jj) = indicejogador(ranking(jj+1)))
-        VARIANT nn - ii
-        END        
-    END;
+            rk := 0..(nn-1) * indicejogador(0);
+            WHILE ii < nn
+            DO   
+                rk(ii) := indicejogador(ranking(ii+1));
+                ii := ii + 1
+            INVARIANT ii : 0..nn & !jj .(jj : 0..(ii-1) => rk(jj) = indicejogador(ranking(jj+1)))
+            VARIANT nn - ii
+            END
+        END
+    END ;
     
     rk <-- posicaoRanking(pp)=
     BEGIN 
         VAR ii IN ii := 0;
-        WHILE indicejogador(ranking(ii)) /= pp
-        DO ii:= ii + 1
-        INVARIANT ii < maxjogadores & #i2 .(i2 : ii..(maxjogadores -1) & indicejogador(ranking(i2)) = pp)
-        VARIANT maxjogadores -1 - ii
-        END;
-        rk := ii
+            WHILE indicejogador(ranking(ii)) /= pp
+            DO ii:= ii + 1
+            INVARIANT ii < maxjogadores & #i2 .(i2 : ii..(maxjogadores -1) & indicejogador(ranking(i2)) = pp)
+            VARIANT maxjogadores -1 - ii
+            END;
+            rk := ii
+        END
     END ;
     
     ordenarRanking = 
