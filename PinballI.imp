@@ -65,7 +65,11 @@ OPERATIONS
     END ;
     
     finalizar = 
-    BEGIN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 2, 0, []; 
+    BEGIN 
+        jogadorAtual:= empty;
+        estado := 2;
+        bolasAtuais := 0;
+        fimSequencia := 0;
         IF indicejogador~(jogadorAtual) /: dom(records)  THEN 
             records(indicejogador~(jogadorAtual)) := pontuacaoAtual 
         ELSE 
@@ -80,17 +84,32 @@ OPERATIONS
     
     perderBola = 
     BEGIN  
-        bolasAtuais:= bolasAtuais -1; sequenciaAcertos := []
+        bolasAtuais:= bolasAtuais -1; fimSequencia := 0
     END;
     // Adicionar e ordenar o ranking
     
     pontuar(pp) = 
-    BEGIN sequenciaAcertos := sequenciaAcertos <- pp;
-        IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
-            IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
+    BEGIN         
+        IF fimSequencia >= card(bonus(pp)) THEN 
+            IF (sequenciaAcertos /|\ min({fimSequencia, card(bonus(pp))})) = bonus(pp) THEN 
                 pontuacaoAtual := min({pontuacaoAtual + pp*10 + 100, MAXINT})
             ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT})  END 
-        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END
+        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END;
+        
+        IF fimSequencia < 6 
+        THEN sequenciaAcertos(fimSequencia) := pp; fimSequencia := fimSequencia +1
+        ELSE 
+            VAR ii IN ii := 0;
+            WHILE ii < 4
+            DO   
+                sequenciaAcertos(ii) := sequenciaAcertos(ii+1);
+                ii := ii + 1
+            INVARIANT ii : 0..4
+            VARIANT 4 - ii
+            END
+        END;
+        sequenciaAcertos(5) := pp
+        END
     END;
     
     rk <--  topN(nn)=
