@@ -70,11 +70,7 @@ OPERATIONS
         estado := 2;
         bolasAtuais := 0;
         fimSequencia := 0;
-        IF indicejogador~(jogadorAtual) /: dom(records)  THEN 
-            records(indicejogador~(jogadorAtual)) := pontuacaoAtual 
-        ELSE 
-            records(indicejogador~(jogadorAtual)) := max({records(indicejogador~(jogadorAtual)), pontuacaoAtual}) 
-        END ;
+        records(indicejogador~(jogadorAtual)) := max({records(indicejogador~(jogadorAtual)), pontuacaoAtual});
         IF indicejogador~(jogadorAtual) /: ran(ranking) THEN 
             ranking(size(ranking) +1) := indicejogador~(jogadorAtual) 
         ELSE 
