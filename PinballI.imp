@@ -12,20 +12,19 @@ VALUES nBolas = 5;
     valorMaquina = 5;
     empty = 0;
     jogadores = 1..4;
-    bonus = {1 |->  [3,2,4], 2 |->  [1,4,5], 3 |->  [2,1, 4, 7], 4 |->  [3,2,1], 5 |->  [5,2,6], 6 |->  [4,7,1], 7 |->  [5,4,1,2,3]}
+    bonus = {0 |->  [3], 1 |->  [3,2,4], 2 |->  [1,4,5], 3 |->  [2,1, 4, 7], 4 |->  [3,2,1], 5 |->  [5,2,6], 6 |->  [4,7,1], 7 |->  [5,4,1,2,3]}
     
 CONCRETE_VARIABLES
-    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos, indicejogador, fimRanking, fimSequencia
+    jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos, fimRanking, fimSequencia
     
 INVARIANT
     fimRanking : 0..(maxjogadores)
-    & fimSequencia : 0..6
-    & indicejogador : 0..(maxjogadores-1) >-> JOGADOR 
+    & fimSequencia : 0..6 
     & jogadorAtual : JOGADOR 
     & bolasAtuais : NAT 
     & pontuacaoAtual : NAT 
     & estado : 0..5  
-    & ranking : 0..(maxjogadores-1) >-> 0..(maxjogadores-1)
+    & ranking : 0..(maxjogadores-1) --> 0..(maxjogadores-1)
     & cartao : 0..(maxjogadores-1) --> NAT 
     & records :  0..(maxjogadores-1) --> NAT  
     & sequenciaAcertos : 0..5 --> NAT
@@ -36,30 +35,38 @@ INITIALISATION
     jogadorAtual := empty; 
     bolasAtuais := 0; 
     pontuacaoAtual:= 0; 
-    estado := 0; 
-    ranking := (0..(maxjogadores-1)) * JOGADOR; 
+    estado := 0;  
     cartao := (0..(maxjogadores-1)) * {0}; 
     records := (0..(maxjogadores-1)) * {0};
     sequenciaAcertos:= (0..(maxjogadores-1)) * {0};
-    indicejogador :=(0..(maxjogadores-1)) * JOGADOR;
     fimRanking :=0;
-    fimSequencia := 0
+    fimSequencia := 0;
+    VAR ii IN ii := 0;
+        ranking := (0..(maxjogadores-1)) * {0};
+        WHILE ii < maxjogadores
+        DO   
+            ranking(ii) := ranking(ii+1);
+            ii := ii + 1
+        INVARIANT ii : 0..maxjogadores & !jj .(jj : 0..(ii-1) => jj = ranking(jj))
+        VARIANT maxjogadores - ii
+        END
+    END
     
 OPERATIONS
     
     adicionarCredito(jj, cc) =
-    BEGIN  cartao(indicejogador~(jj)) := cc + cartao(indicejogador~(jj))
+    BEGIN  cartao(jj) := cc + cartao(jj)
     END ;
     
     transferirCredito(j1, j2, cc) =  
-    BEGIN cartao(indicejogador~(j1)) := cartao(indicejogador~(j1)) - cc;
-          cartao(indicejogador~(j2)) := cartao(indicejogador~(j2)) + cc
+    BEGIN cartao(j1) := cartao(j1) - cc;
+          cartao(j2) := cartao(j2) + cc
     END ;
     
     iniciarPartida(jj) = 
     BEGIN jogadorAtual := jj;
         bolasAtuais := nBolas; 
-        cartao(indicejogador~(jj)):= cartao(indicejogador~(jj)) - valorMaquina; 
+        cartao(jj):= cartao(jj) - valorMaquina; 
         estado := 1; 
         pontuacaoAtual := 0
     END ;
@@ -70,11 +77,11 @@ OPERATIONS
         estado := 2;
         bolasAtuais := 0;
         fimSequencia := 0;
-        records(indicejogador~(jogadorAtual)) := max({records(indicejogador~(jogadorAtual)), pontuacaoAtual});
-        IF indicejogador~(jogadorAtual) /: ran(ranking) THEN 
-            ranking(size(ranking) +1) := indicejogador~(jogadorAtual) 
+        records(jogadorAtual) := max({records(jogadorAtual), pontuacaoAtual});
+        IF jogadorAtual /: ran(ranking) THEN 
+            ranking(size(ranking) +1) := jogadorAtual
         ELSE 
-            ranking := ranking  <+ { ranking~(indicejogador~(jogadorAtual)) |-> indicejogador~(jogadorAtual)} 
+            ranking := ranking  <+ { ranking~(jogadorAtual) |-> jogadorAtual} 
         END
     END;
     
@@ -112,12 +119,12 @@ OPERATIONS
     rk <--  topN(nn)=
     BEGIN 
         VAR ii IN ii := 0;
-            rk := (0..(nn-1)) * {indicejogador(0)};
+            rk := (0..(nn-1)) * {0};
             WHILE ii < nn
             DO   
-                rk(ii) := indicejogador(ranking(ii+1));
+                rk(ii) := ranking(ii+1);
                 ii := ii + 1
-            INVARIANT ii : 0..nn & !jj .(jj : 0..(ii-1) => rk(jj) = indicejogador~(ranking(jj+1)))
+            INVARIANT ii : 0..nn & !jj .(jj : 0..(ii-1) => rk(jj) = ranking(jj+1))
             VARIANT nn - ii
             END
         END
@@ -126,9 +133,9 @@ OPERATIONS
     rk <-- posicaoRanking(pp)=
     BEGIN 
         VAR ii IN ii := 0;
-            WHILE indicejogador(ranking(ii)) /= pp
+            WHILE ranking(ii) /= pp
             DO ii:= ii + 1
-            INVARIANT ii < maxjogadores & #i2 .(i2 : ii..(maxjogadores -1) & indicejogador(ranking(i2)) = pp)
+            INVARIANT ii < maxjogadores & #i2 .(i2 : ii..(maxjogadores -1) & ranking(i2) = pp)
             VARIANT maxjogadores -1 - ii
             END;
             rk := ii
@@ -140,6 +147,7 @@ OPERATIONS
         VAR ii, tt, sw IN
             ii:=0;
             tt:=ii;
+            sw:=0;
             WHILE ii < maxjogadores
             DO  
                 VAR jj IN
