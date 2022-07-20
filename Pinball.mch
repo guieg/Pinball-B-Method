@@ -87,11 +87,7 @@ OPERATIONS
     THEN  
         bolasAtuais, sequenciaAcertos :=  bolasAtuais -1, []
     END;
-    
-     rk <--  topN(nn)=
-    PRE  nn : NAT1 & size(ranking) >= nn & estado /= 2
-    THEN rk := % jg . (jg : 0..(nn-1) | ranking(jg+1) ) // ranking /|\ nn
-    END ;
+   
 
     rk <-- posicaoRanking(pp)=
     PRE pp : jogadores & pp : ran(ranking) & estado /= 2
