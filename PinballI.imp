@@ -12,7 +12,8 @@ VALUES
     maxjogadores = 8;
     valorMaquina = 5;
     empty = 0;
-    jogadores = 1..7
+    jogadores = 1..7;
+    bonus = {0 |-> 0, 1 |-> 9, 2 |-> 10, 3 |-> 14, 4 |-> 4, 5 |-> 13, 6 |->  12, 7 |-> 15}
     
     
 CONCRETE_VARIABLES
@@ -20,7 +21,7 @@ CONCRETE_VARIABLES
     
 INVARIANT
     fimRanking : 0..(maxjogadores)
-    & fimSequencia : 0..6 
+    & fimSequencia : 0..4 
     & jogadorAtual : jogador
     & bolasAtuais : NAT 
     & pontuacaoAtual : NAT 
@@ -28,7 +29,7 @@ INVARIANT
     & rankingi : jogador --> jogador
     & cartaoi : jogador --> NAT 
     & recordsi :  jogador --> NAT  
-    & sequenciaAcertosi : 0..5 --> NAT
+    & sequenciaAcertosi : (0..3) --> NAT
     
     
     
@@ -39,7 +40,7 @@ INITIALISATION
     estado := 0;  
     cartaoi := jogador * {0}; 
     recordsi := jogador * {0};
-    sequenciaAcertosi:= (0..5) * {0};
+    sequenciaAcertosi:= (0..3) * {0};
     fimRanking :=0;
     fimSequencia := 0;
     rankingi := jogador * {0}
@@ -65,13 +66,56 @@ OPERATIONS
         pontuacaoAtual := 0
     END ;
     
+    pontuar(pp) = 
+    BEGIN
+        VAR novaPontuacao IN
+            novaPontuacao:= pontuacaoAtual + pp*10;
+            IF fimSequencia = 4 THEN 
+                VAR xx, ii, valorBonus IN
+                    xx:=0;
+                    ii:=0;
+                    valorBonus := bonus(pp);
+                    WHILE ii < 4
+                    DO   
+                        xx := xx + sequenciaAcertosi(ii);
+                        ii := ii + 1
+                    INVARIANT ii : 0..4
+                    VARIANT 4 - ii
+                    END;
+                    
+                    IF xx = valorBonus THEN 
+                        novaPontuacao:= novaPontuacao + 100
+                    END                 
+                    
+                END;
+                VAR ii IN ii := 0;
+                    WHILE ii < 3
+                    DO   
+                        sequenciaAcertosi(ii) := sequenciaAcertosi(ii+1);
+                        ii := ii + 1
+                    INVARIANT ii : 0..3
+                    VARIANT 3 - ii
+                    END
+                END;
+                sequenciaAcertosi(3) := pp
+            ELSE
+                sequenciaAcertosi(fimSequencia) := pp; fimSequencia := fimSequencia +1    
+            END;
+            IF novaPontuacao < MAXINT 
+            THEN  
+                pontuacaoAtual := novaPontuacao
+            ELSE  pontuacaoAtual := MAXINT
+            END
+        END
+    END;
+    
     
     finalizar = 
     BEGIN
         estado := 2;
         bolasAtuais := 0;
         fimSequencia := 0;
-             
+        
         
         VAR ii, kk IN ii := 0; kk := rankingi(ii);
             WHILE (ii < fimRanking & kk /= jogadorAtual)

@@ -1,7 +1,7 @@
 MACHINE Pinball
     
 CONSTANTS         
-    jogador, nBolas, valorMaquina, empty, jogadores, bumpers
+    jogador, nBolas, valorMaquina, empty, jogadores, bumpers, bonus
     
 PROPERTIES
     jogador = 0..7
@@ -11,6 +11,8 @@ PROPERTIES
     & empty : jogador
     & jogadores = 1..7
     & bumpers = 1..7
+    & bonus = {0 |-> 0, 1 |-> 9, 2 |-> 10, 3 |-> 14, 4 |-> 4, 5 |-> 13, 6 |->  12, 7 |-> 15}
+    
     
     
 VARIABLES
@@ -33,7 +35,6 @@ INITIALISATION
     
     
 OPERATIONS
-    
     adicionarCredito(jj, cc) =
     PRE jj : jogadores & cc : NAT & cc > 0 & estado = 0 & cartao(jj) < MAXINT
     THEN  cartao :=  cartao <+ {jj |-> min({cc + cartao(jj), MAXINT})}
@@ -53,6 +54,17 @@ OPERATIONS
         || pontuacaoAtual := 0
     END ;
     
+    pontuar(pp) = 
+    PRE pp : bumpers & not(jogadorAtual=empty) & bolasAtuais > 0 & pontuacaoAtual < MAXINT
+    THEN     sequenciaAcertos := sequenciaAcertos <- pp ||
+        IF size(sequenciaAcertos) >= 4 THEN 
+            IF SIGMA (xx) . (xx : ran(rev(sequenciaAcertos) /|\ 4) | xx) = bonus(pp) THEN
+                pontuacaoAtual := min({pontuacaoAtual + pp*10 + 100, MAXINT})
+            ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END 
+        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END
+    END; 
+    
+    
     
     finalizar = 
     PRE not(jogadorAtual = empty) & estado = 1 
@@ -68,6 +80,7 @@ OPERATIONS
             ranking := ranking  <+ { ranking~(jogadorAtual) |-> jogadorAtual} 
         END
     END;
+    
     
     perderBola = 
     PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
