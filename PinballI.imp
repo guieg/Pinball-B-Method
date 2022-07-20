@@ -32,7 +32,7 @@ INVARIANT
     & sequenciaAcertosi : (0..3) --> NAT
     
     & !xx.(xx: 0..(fimRanking - 1) => rankingi(xx) = ranking(xx+1))
-    & card(ran(ranking)) = fimRanking
+    & size(ranking) = fimRanking
     & fimSequencia <= size(sequenciaAcertos)
     & !xx.(xx: 0..(fimSequencia - 1) => sequenciaAcertosi(xx) = rev(rev(sequenciaAcertos) /|\ fimSequencia)(xx+1))
     
@@ -54,13 +54,27 @@ INITIALISATION
 OPERATIONS
     
     adicionarCredito(jj, cc) =
-    BEGIN  cartaoi(jj) := cc + cartaoi(jj)
+    BEGIN
+        VAR novoValor IN
+            novoValor:= cc + cartaoi(jj);
+            
+            IF novoValor > MAXINT THEN novoValor:= MAXINT END;
+            
+            cartaoi(jj) := novoValor
+        END
     END ;
     
     
     transferirCredito(j1, j2, cc) =  
-    BEGIN cartaoi(j1) := cartaoi(j1) - cc;
-        cartaoi(j2) := cartaoi(j2) + cc
+    BEGIN 
+        cartaoi(j1) := cartaoi(j1) - cc;
+        VAR novoValor IN
+            novoValor:= cc + cartaoi(j2);
+            
+            IF novoValor > MAXINT THEN novoValor:= MAXINT END;
+            
+            cartaoi(j2) := novoValor
+        END
     END ;
     
     iniciarPartida(jj) = 
@@ -154,9 +168,11 @@ OPERATIONS
     BEGIN 
         VAR ii,kk IN ii := 0; kk := rankingi(ii);
             WHILE kk /= pp
-            DO ii:= ii + 1; kk := rankingi(ii)
-            INVARIANT ii < maxjogadores & #i2 .(i2 : ii..(maxjogadores -1) & rankingi(i2) = pp)
-            VARIANT maxjogadores -1 - ii
+            DO 
+                ii:= ii + 1; 
+                kk := rankingi(ii)
+            INVARIANT ii : 0..fimRanking & #i2 .(i2 : ii..(fimRanking -1) & rankingi(i2) = pp)
+            VARIANT fimRanking - ii
             END;
             rk := ii
         END
