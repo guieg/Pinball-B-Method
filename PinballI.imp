@@ -155,6 +155,38 @@ OPERATIONS
             END;
             rk := ii
         END
-    END
+    END;
     
+    ordenarRanking = 
+    BEGIN 
+        VAR ii, tt, sw, pontuacaott IN
+            ii:=0;
+            tt:=ii;
+            sw:=0;
+            pontuacaott := 0;
+            WHILE ii < maxjogadores
+            DO  
+                VAR jj, pontuacaojj IN
+                    jj := ii+1;
+                    pontuacaojj := 0;
+                    WHILE jj < maxjogadores
+                    DO  
+                        pontuacaojj := recordsi(rankingi(jj));
+                        pontuacaott := recordsi(rankingi(tt));
+                        IF pontuacaott < pontuacaojj THEN tt:=jj END;
+                        jj:=jj+1
+                    INVARIANT jj : (ii+1)..(maxjogadores)
+                    VARIANT maxjogadores - jj
+                    END;
+                    sw := rankingi(tt);
+                    rankingi(tt) := rankingi(jj);
+                    rankingi(jj) := sw
+                END;
+                ii:=ii+1
+            INVARIANT ii : 0..(maxjogadores) & ! (xx, yy) . (xx : 0..(ii) & yy: 0..(ii) & xx /= yy & xx < yy => records~(ranking~(xx)) > records~(ranking~(yy)) )
+            VARIANT maxjogadores - ii
+            END
+        END;
+        estado := 0
+    END
 END

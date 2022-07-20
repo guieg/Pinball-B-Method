@@ -91,6 +91,13 @@ OPERATIONS
     rk <-- posicaoRanking(pp)=
     PRE pp : jogadores & pp : ran(ranking) & estado /= 2
     THEN rk := ranking~(pp)
+    END;
+    
+    ordenarRanking = 
+    PRE estado = 2
+    THEN ANY oranking WHERE oranking : iseq( jogadores) & dom(oranking) = dom(ranking) & ran(ranking) = ran(oranking) & ! (ii, jj) . ( ii: ran(ranking) & jj: ran(ranking) & records(ii) > records(jj) => oranking~(ii ) < oranking~(jj)) 
+        THEN ranking := oranking END || 
+        estado := 0
     END
     
 END
