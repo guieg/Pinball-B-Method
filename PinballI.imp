@@ -31,6 +31,11 @@ INVARIANT
     & recordsi :  jogador --> NAT  
     & sequenciaAcertosi : (0..3) --> NAT
     
+    & !xx.(xx: 0..(fimRanking - 1) => rankingi(xx) = ranking(xx+1))
+    & card(ran(ranking)) = fimRanking
+    & fimSequencia <= size(sequenciaAcertos)
+    & !xx.(xx: 0..(fimSequencia - 1) => sequenciaAcertosi(xx) = rev(rev(sequenciaAcertos) /|\ fimSequencia)(xx+1))
+    
     
     
 INITIALISATION
