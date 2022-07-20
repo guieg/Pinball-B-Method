@@ -1,24 +1,25 @@
 MACHINE Pinball
     
-SETS
-    JOGADOR
-    
 CONSTANTS         
-    nBolas, valorMaquina, empty, jogadores, bonus, bumpers
+    jogador, nBolas, valorMaquina, empty, jogadores, bumpers, bonus
     
 PROPERTIES
-    nBolas = 5 
+    jogador = 0..7
+    & nBolas = 5 
     & valorMaquina = 5 
-    & empty : JOGADOR 
-    & jogadores = (JOGADOR - {empty}) 
+    & empty = 0
+    & empty : jogador
+    & jogadores = 1..7
     & bumpers = 1..7
-    & bonus = {1 |->  [3,2,4], 2 |->  [1,4,5], 3 |->  [2,1, 4, 7], 4 |->  [3,2,1], 5 |->  [5,2,6], 6 |->  [4,7,1], 7 |->  [5,4,1,2,3]} // Na prática  { [3,2,4, 1], [1,4,5, 2], [2,1, 4, 7, 3], [3,2,1, 4], [5,2,6, 5], [4,7,1, 6], [5,4,1,2,3, 7] }
+    & bonus = {0 |-> 0, 1 |-> 9, 2 |-> 10, 3 |-> 14, 4 |-> 4, 5 |-> 13, 6 |->  12, 7 |-> 15}
+    
+    
     
 VARIABLES
     jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos
     
 INVARIANT
-    jogadorAtual : JOGADOR 
+    jogadorAtual : jogador 
     & bolasAtuais : NAT 
     & bolasAtuais < 6
     & pontuacaoAtual : NAT 
@@ -32,8 +33,8 @@ INVARIANT
 INITIALISATION
     jogadorAtual, bolasAtuais, pontuacaoAtual, estado, ranking, cartao, records, sequenciaAcertos:= empty, 0, 0, 0, [], jogadores*{0},{}, []
     
-OPERATIONS
     
+OPERATIONS
     adicionarCredito(jj, cc) =
     PRE jj : jogadores & cc : NAT & cc > 0 & estado = 0 & cartao(jj) < MAXINT
     THEN  cartao :=  cartao <+ {jj |-> min({cc + cartao(jj), MAXINT})}
@@ -53,6 +54,18 @@ OPERATIONS
         || pontuacaoAtual := 0
     END ;
     
+    pontuar(pp) = 
+    PRE pp : bumpers & not(jogadorAtual=empty) & bolasAtuais > 0 & pontuacaoAtual < MAXINT
+    THEN     sequenciaAcertos := sequenciaAcertos <- pp ||
+        IF size(sequenciaAcertos) >= 4 THEN 
+            IF SIGMA (xx) . (xx : ran(rev(sequenciaAcertos) /|\ 4) | xx) = bonus(pp) THEN
+                pontuacaoAtual := min({pontuacaoAtual + pp*10 + 100, MAXINT})
+            ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END 
+        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END
+    END; 
+    
+    
+    
     finalizar = 
     PRE not(jogadorAtual = empty) & estado = 1 
     THEN jogadorAtual, estado, bolasAtuais, sequenciaAcertos:= empty, 2, 0, [] 
@@ -68,32 +81,22 @@ OPERATIONS
         END
     END;
     
+    
     perderBola = 
     PRE not(jogadorAtual = empty) & estado = 1 & bolasAtuais > 0
     THEN  
         bolasAtuais, sequenciaAcertos :=  bolasAtuais -1, []
     END;
-    // Adicionar e ordenar o ranking
     
-    pontuar(pp) = 
-    PRE pp : bumpers & not(jogadorAtual=empty) & bolasAtuais > 0 & pontuacaoAtual < MAXINT
-    THEN 	sequenciaAcertos := sequenciaAcertos <- pp ||
-        IF size(sequenciaAcertos) >= card(bonus(pp)) THEN 
-            IF rev(rev(sequenciaAcertos) /|\ card(bonus(pp))) = bonus(pp) THEN 
-                pontuacaoAtual := min({pontuacaoAtual + pp*10 + 100, MAXINT})
-            ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END 
-        ELSE  pontuacaoAtual := min({pontuacaoAtual + pp*10, MAXINT}) END
-    END;
-    
-    rk <--  topN(nn)=
+     rk <--  topN(nn)=
     PRE  nn : NAT1 & size(ranking) >= nn & estado /= 2
-    THEN rk := % jg . (jg : NAT & jg : dom(ranking)  & jg <= nn | ranking(jg) ) // ranking /|\ nn
+    THEN rk := % jg . (jg : 0..(nn-1) | ranking(jg+1) ) // ranking /|\ nn
     END ;
-    
+
     rk <-- posicaoRanking(pp)=
     PRE pp : jogadores & pp : ran(ranking) & estado /= 2
     THEN rk := ranking~(pp)
-    END ;
+    END;
     
     ordenarRanking = 
     PRE estado = 2
@@ -103,4 +106,3 @@ OPERATIONS
     END
     
 END
-
